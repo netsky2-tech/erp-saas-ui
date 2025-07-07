@@ -1,4 +1,5 @@
 import FuseSplashScreen from '@fuse/core/FuseSplashScreen';
+import axios from 'axios';
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 
 interface TenantContextType {
@@ -14,34 +15,17 @@ export function TenantProvider({ children }: { children: ReactNode }): React.Rea
 
 	useEffect(() => {
 		const { hostname } = window.location;
+		const baseDomain = import.meta.env.VITE_APP_BASE_DOMAIN;
+		let apiBaseUrl: string;
 
-		const parts = hostname.split('.');
-
-		if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
-			// Entorno de desarrollo local
-			// Podemos definir un subdominio de prueba, o dejarlo nulo si el backend
-			// permite un tenant por defecto para localhost.
-			// Por ahora, lo dejaremos nulo y el backend lo manejará si es necesario.
-			// O podríamos usar una variable de entorno para un subdominio de desarrollo.
-
-			setTenantSubdomain(null); // O 'default' si tu backend tiene un tenant por defecto
-		} else if (parts.length >= 2) {
-			// Considera al menos 2 partes para subdominio.dominio.com
-			// Asume que la primera parte es el subdominio si no es 'www'
-			const potentialSubdomain = parts[0];
-			if (potentialSubdomain !== 'www') {
-				setTenantSubdomain(potentialSubdomain);
-			} else if (parts.length >= 3) {
-				// Si es www.subdominio.dominio.com
-				setTenantSubdomain(parts[1]); // Podría ser el segundo segmento
-			} else {
-				setTenantSubdomain(null); // No se pudo determinar el subdominio
-			}
+		if (tenantSubdomain && baseDomain) {
+			apiBaseUrl = `https://${tenantSubdomain}.${baseDomain}/api`;
 		} else {
-			setTenantSubdomain(null); // No hay subdominio claro
+			apiBaseUrl = `http://${baseDomain}/api`;
 		}
-		setIsTenantResolved(true);
-	}, []);
+
+		axios.defaults.baseURL = apiBaseUrl;
+	}, [tenantSubdomain, isTenantResolved]);
 
 	const value = useMemo(
 		() => ({

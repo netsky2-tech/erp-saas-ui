@@ -5,7 +5,6 @@ const axiosBaseQuery =
 	(): BaseQueryFn<AxiosRequestConfig<unknown>, unknown, AxiosError> =>
 	async ({ url, method, data, params }) => {
 		try {
-			Axios.defaults.baseURL = '/api';
 			const result = await Axios({
 				url,
 				method,
