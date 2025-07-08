@@ -55,7 +55,7 @@ function UserListTable({ users }: UserListTableProps) {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{paginatedUsers.map((user) => (
+						{paginatedUsers.map((user: User) => (
 							<TableRow
 								hover
 								key={user.id}

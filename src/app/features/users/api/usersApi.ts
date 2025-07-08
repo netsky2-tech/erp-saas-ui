@@ -35,6 +35,11 @@ export const usersApi = apiService.injectEndpoints({
 					? [...result.map(({ id }) => ({ type: USER_TAG, id })), { type: USER_TAG, id: 'LIST' }]
 					: [{ type: USER_TAG, id: 'LIST' }]
 		}),
+		getUserById: builder.query<User, string>({
+			query: (id) => `/users/${id}`, // La URL para obtener un usuario específico
+			transformResponse: (response: UserDTO) => adaptUserDto(response),
+			providesTags: (result, error, id) => [{ type: 'User', id }] // Provee el tag específico del ID del usuario
+		}),
 		createUser: builder.mutation<User, Partial<User>>({
 			query: (newUser) => ({
 				url: '/users',
@@ -43,9 +48,42 @@ export const usersApi = apiService.injectEndpoints({
 			}),
 			invalidatesTags: [{ type: USER_TAG, id: 'LIST' }],
 			transformResponse: (response: UserDTO) => adaptUserDto(response)
+		}),
+		updateUser: builder.mutation<User, Partial<User> & Pick<User, 'id'>>({
+			// Requiere el ID y los datos a actualizar
+			query: ({ id, ...patch }) => ({
+				url: `/users/${id}`,
+				method: 'PUT', // O PATCH, según tu API de Laravel
+				data: patch
+			}),
+			transformResponse: (response: UserDTO) => adaptUserDto(response),
+			// Invalida la lista y el usuario específico después de la actualización
+			invalidatesTags: (result, error, { id }) => [
+				{ type: 'User', id: 'LIST' },
+				{ type: 'User', id }
+			]
+		}),
+		// Nuevo: Endpoint para eliminar un usuario
+		deleteUser: builder.mutation<void, string>({
+			// Recibe el ID del usuario a eliminar
+			query: (id) => ({
+				url: `/users/${id}`,
+				method: 'DELETE'
+			}),
+			// Invalida la lista y el usuario específico después de la eliminación
+			invalidatesTags: (result, error, id) => [
+				{ type: 'User', id: 'LIST' },
+				{ type: 'User', id }
+			]
 		})
 	}),
 	overrideExisting: true
 });
 
-export const { useGetUsersQuery, useCreateUserMutation } = usersApi;
+export const {
+	useGetUsersQuery,
+	useGetUserByIdQuery,
+	useCreateUserMutation,
+	useUpdateUserMutation,
+	useDeleteUserMutation
+} = usersApi;
