@@ -2,6 +2,7 @@ import FusePageCarded from '@fuse/core/FusePageCarded';
 import { Alert, Box, Button, CircularProgress, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useGetUsersQuery } from '../api/usersApi';
+import { UserListTable } from '../components/UserListTable';
 
 function UsersPage() {
 	const { data: users, isLoading, isError, error } = useGetUsersQuery();

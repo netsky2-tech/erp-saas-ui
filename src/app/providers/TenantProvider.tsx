@@ -15,16 +15,33 @@ export function TenantProvider({ children }: { children: ReactNode }): React.Rea
 
 	useEffect(() => {
 		const { hostname } = window.location;
-		const baseDomain = import.meta.env.VITE_APP_BASE_DOMAIN;
-		let apiBaseUrl: string;
+		const parts = hostname.split('.');
 
-		if (tenantSubdomain && baseDomain) {
-			apiBaseUrl = `https://${tenantSubdomain}.${baseDomain}/api`;
-		} else {
-			apiBaseUrl = `http://${baseDomain}/api`;
+		if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+			console.warn('Running on localhost. Tenant subdomain detection might be limited for direct URL access.');
+		} else if (parts.length >= 3 && parts[0] !== 'www') {
+			setTenantSubdomain(parts[0]);
+		} else if (parts.length >= 2 && parts[0] === 'www' && parts.length >= 3) {
+			setTenantSubdomain(parts[1]);
 		}
 
-		axios.defaults.baseURL = apiBaseUrl;
+		setIsTenantResolved(true);
+	}, []);
+
+	useEffect(() => {
+		if (isTenantResolved) {
+			const { hostname } = window.location;
+			const baseDomain = import.meta.env.VITE_APP_BASE_DOMAIN;
+			let apiBaseUrl: string;
+
+			if (tenantSubdomain && baseDomain) {
+				apiBaseUrl = `http://${tenantSubdomain}.${baseDomain}/api`;
+			} else {
+				apiBaseUrl = `http://${baseDomain}/api`;
+			}
+
+			axios.defaults.baseURL = apiBaseUrl;
+		}
 	}, [tenantSubdomain, isTenantResolved]);
 
 	const value = useMemo(

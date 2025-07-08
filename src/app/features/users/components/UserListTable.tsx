@@ -1,11 +1,16 @@
 import { TableCell, TableContainer, TableHead, TablePagination, Tooltip } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
 import TableRow from '@mui/material/TableRow';
-import IconButton from 'material-ui/IconButton';
-import Table, { TableBody } from 'material-ui/Table';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { User } from '../types/User';
+
+interface UserListTableProps {
+	users: User[];
+}
 
 function UserListTable({ users }: UserListTableProps) {
 	const navigate = useNavigate();

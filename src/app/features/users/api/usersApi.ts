@@ -1,7 +1,7 @@
 import apiService from 'app/store/apiService';
-import { adaptUserDto } from '../types/adapters';
+import { adaptSingleUserDto, adaptUserDto } from '../types/adapters';
 import { User } from '../types/User';
-import { UserDTO } from '../types/UserDTO';
+import { SingleUserDTO, UserDTO } from '../types/UserDTO';
 
 interface GetUsersQueryParams {
 	// parametros de filtrado y paginacion
@@ -27,17 +27,19 @@ export const usersApi = apiService.injectEndpoints({
 				method: 'GET',
 				params: sanitizeParams(params)
 			}),
-			transformResponse: (response: UserDTO[]) => {
-				return response.map(adaptUserDto);
+			transformResponse: (response: UserDTO) => {
+				return adaptUserDto(response);
 			},
 			providesTags: (result) =>
 				result
-					? [...result.map(({ id }) => ({ type: USER_TAG, id })), { type: USER_TAG, id: 'LIST' }]
+					? [...result.map(({ id }) => ({ type: USER_TAG, id }) as const), { type: USER_TAG, id: 'LIST' }]
 					: [{ type: USER_TAG, id: 'LIST' }]
 		}),
 		getUserById: builder.query<User, string>({
-			query: (id) => `/users/${id}`, // La URL para obtener un usuario específico
-			transformResponse: (response: UserDTO) => adaptUserDto(response),
+			query: (id) => ({
+				url: `/users/${id}`
+			}),
+			transformResponse: (response: SingleUserDTO) => adaptSingleUserDto(response),
 			providesTags: (result, error, id) => [{ type: 'User', id }] // Provee el tag específico del ID del usuario
 		}),
 		createUser: builder.mutation<User, Partial<User>>({
@@ -47,7 +49,7 @@ export const usersApi = apiService.injectEndpoints({
 				body: newUser
 			}),
 			invalidatesTags: [{ type: USER_TAG, id: 'LIST' }],
-			transformResponse: (response: UserDTO) => adaptUserDto(response)
+			transformResponse: (response: SingleUserDTO) => adaptSingleUserDto(response)
 		}),
 		updateUser: builder.mutation<User, Partial<User> & Pick<User, 'id'>>({
 			// Requiere el ID y los datos a actualizar
@@ -56,7 +58,7 @@ export const usersApi = apiService.injectEndpoints({
 				method: 'PUT', // O PATCH, según tu API de Laravel
 				data: patch
 			}),
-			transformResponse: (response: UserDTO) => adaptUserDto(response),
+			transformResponse: (response: SingleUserDTO) => adaptSingleUserDto(response),
 			// Invalida la lista y el usuario específico después de la actualización
 			invalidatesTags: (result, error, { id }) => [
 				{ type: 'User', id: 'LIST' },
