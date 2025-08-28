@@ -22,6 +22,7 @@ export default defineConfig({
 					});
 					return [];
 				}
+				return null;
 			}
 		}
 	],
@@ -31,9 +32,9 @@ export default defineConfig({
 	server: {
 		host: '0.0.0.0',
 		port: 5173,
-		open: 'http://tenant1.erp-saas-frontend.test:5173',
+		open: 'http://devsoa.erp-saas-frontend.test:5173',
 		hmr: {
-			host: 'tenant1.erp-saas-frontend.test',
+			host: 'devsoa.erp-saas-frontend.test',
 			protocol: 'ws'
 		}
 	},
